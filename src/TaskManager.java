@@ -1,22 +1,18 @@
 import java.util.*;
 
 public class TaskManager {
-    HashMap<Integer, Task> taskMap = new HashMap<>();
-    HashMap<Integer, List<Integer>> subtaskMap = new HashMap<>();
-    HashMap<Integer, Epic> epicMap = new HashMap<>();
+    private final HashMap<Integer, Task> taskMap = new HashMap<>();
+    private final HashMap<Integer, List<Integer>> subtaskMap = new HashMap<>();
+    private final HashMap<Integer, Epic> epicMap = new HashMap<>();
 
-    private int taskIdCounter = 1;
-    private int epicIdCounter = 1;
+    //private int taskIdCounter = 1;
+    private int IdCounter = 1;
 
     public TaskManager() {
     }
 
-    private int generateTaskId() {
-        return taskIdCounter++;
-    }
-
-    private int generateEpicId() {
-        return epicIdCounter++;
+    private int generateId() {
+        return IdCounter++;
     }
 
     // Методы работы с Task
@@ -33,7 +29,7 @@ public class TaskManager {
     }
 
     public void createTask(Task task) {
-        task.setId(generateTaskId());
+        task.setId(generateId());
         taskMap.put(task.getId(), task);
     }
 
@@ -60,7 +56,7 @@ public class TaskManager {
         return epicMap.get(id);
     }
     public Epic createEpic(String name, String description) {
-        Epic epic = new Epic(name, description, StatusTask.NEW, generateEpicId());
+        Epic epic = new Epic(name, description, StatusTask.NEW, generateId());
         epicMap.put(epic.getId(), epic);
         return epic;
     }
@@ -88,7 +84,7 @@ public class TaskManager {
     public Subtask createSubtask(String name, String description, int epicId) {
         Epic epic = getEpicById(epicId);
         if (epic != null) {
-            Subtask subtask = new Subtask(name, description, StatusTask.NEW, generateTaskId(), epicId);
+            Subtask subtask = new Subtask(name, description, StatusTask.NEW, generateId(), epicId);
             List<Integer> subtaskIds = subtaskMap.getOrDefault(epicId, new ArrayList<>());
             subtaskIds.add(subtask.getId());
             subtaskMap.put(epicId, subtaskIds);

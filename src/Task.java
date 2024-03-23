@@ -1,9 +1,9 @@
 public class Task {
-    final private String name;
-    final private String description;
+    private final String name;
+    private final String description;
 
-     private StatusTask status;
-     private int id = 0;
+    private StatusTask status;
+    private int id = 0;
 
 
     public void setId(int id) {
