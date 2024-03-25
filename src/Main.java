@@ -10,17 +10,22 @@ public class Main {
         taskManager.createTask(task2);
 
         // Создание эпика с двумя подзадачами
-        Epic epic1 = taskManager.createEpic("Починить авто", "Ремонт подвески машины");
-        Subtask subtask1 = taskManager.createSubtask("Купить запчасти", "Выбрать и заказать запчасти", epic1.getId());
-        Subtask subtask2 = taskManager.createSubtask("Отдать в сервис", "Отвезти машину в сервис", epic1.getId());
+        Epic epic1 = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW, 0);
+        taskManager.createEpic(epic1);
+        Subtask subtask1 = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, 0, epic1.getId());
+        taskManager.createSubtask(subtask1);
+        Subtask subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", StatusTask.NEW, 0, epic1.getId());
+        taskManager.createSubtask(subtask2);
 
-        // Создание эпика с одной подзадачей
-        Epic epic2 = taskManager.createEpic("Велосипед", "Купить велик ребенку");
-        Subtask subtask3 = taskManager.createSubtask("Выбор велосипеда", "Выбрать и купить велосипед", epic2.getId());
+// Создание эпика с одной подзадачей
+        Epic epic2 = new Epic("Велосипед", "Купить велик ребенку", StatusTask.NEW, 0);
+        taskManager.createEpic(epic2);
+        Subtask subtask3 = new Subtask("Выбор велосипеда", "Выбрать и купить велосипед", StatusTask.NEW, 0, epic2.getId());
+        taskManager.createSubtask(subtask3);
 
         // Печать списков эпиков, задач и подзадач
         System.out.println("Список эпиков:");
-        for (Epic epic : taskManager.getAllEpic()) {
+        for (Epic epic : taskManager.getAllEpics()) {
             System.out.println(epic.getName());
         }
 
@@ -57,7 +62,7 @@ public class Main {
         }
 
         System.out.println("\nСписок эпиков после удаления эпика 2:");
-        for (Epic epic : taskManager.getAllEpic()) {
+        for (Epic epic : taskManager.getAllEpics()) {
             System.out.println(epic.getName());
         }
     }

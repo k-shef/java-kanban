@@ -2,17 +2,16 @@ import java.util.*;
 
 public class TaskManager {
     private final HashMap<Integer, Task> taskMap = new HashMap<>();
-    private final HashMap<Integer, List<Integer>> subtaskMap = new HashMap<>();
+    private final HashMap<Integer, Subtask> subtaskMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicMap = new HashMap<>();
 
-    //private int taskIdCounter = 1;
-    private int IdCounter = 1;
+    private int idCounter = 1;
 
     public TaskManager() {
     }
 
     private int generateId() {
-        return IdCounter++;
+        return idCounter++;
     }
 
     // Методы работы с Task
@@ -28,9 +27,10 @@ public class TaskManager {
         return taskMap.get(id);
     }
 
-    public void createTask(Task task) {
+    public Task createTask(Task task) {
         task.setId(generateId());
         taskMap.put(task.getId(), task);
+        return task;
     }
 
     public void updateTask(Task updatedTask) {
@@ -42,8 +42,7 @@ public class TaskManager {
     }
 
     // Методы работы с Epic
-
-    public ArrayList<Epic> getAllEpic() {
+    public ArrayList<Epic> getAllEpics() {
         return new ArrayList<>(epicMap.values());
     }
 
@@ -52,11 +51,11 @@ public class TaskManager {
     }
 
     public Epic getEpicById(int id) {
-
         return epicMap.get(id);
     }
-    public Epic createEpic(String name, String description) {
-        Epic epic = new Epic(name, description, StatusTask.NEW, generateId());
+
+    public Epic createEpic(Epic epic) {
+        epic.setId(generateId());
         epicMap.put(epic.getId(), epic);
         return epic;
     }
@@ -68,45 +67,45 @@ public class TaskManager {
     public void removeEpicById(int id) {
         Epic removedEpic = epicMap.remove(id);
         if (removedEpic != null) {
-            List<Integer> subtaskIds = subtaskMap.remove(id);
-            if (subtaskIds != null) {
-                for (int subtaskId : subtaskIds) {
-                    taskMap.remove(subtaskId);
-                }
+            for (int subtaskId : removedEpic.getIdsSubtask()) {
+                subtaskMap.remove(subtaskId);
             }
         }
     }
 
-    public ArrayList<Epic> getAllSubtaskByEpic(int epicId) {
-        return new ArrayList<>(epicMap.values());
-    }
-
-    public Subtask createSubtask(String name, String description, int epicId) {
-        Epic epic = getEpicById(epicId);
+    // Методы работы с Subtask
+    public Subtask createSubtask(Subtask subtask) {
+        Epic epic = getEpicById(subtask.getEpicId());
         if (epic != null) {
-            Subtask subtask = new Subtask(name, description, StatusTask.NEW, generateId(), epicId);
-            List<Integer> subtaskIds = subtaskMap.getOrDefault(epicId, new ArrayList<>());
-            subtaskIds.add(subtask.getId());
-            subtaskMap.put(epicId, subtaskIds);
+            subtask.setId(generateId());
+            subtaskMap.put(subtask.getId(), subtask);
+            epic.addIdSubtasks(subtask.getId());
             return subtask;
         }
         return null;
     }
 
     public List<Subtask> getAllSubtasksByEpicId(int epicId) {
-        List<Integer> subtaskIds = subtaskMap.getOrDefault(epicId, Collections.emptyList());
-        List<Subtask> subtasks = new ArrayList<>();
-        for (int subtaskId : subtaskIds) {
-            Task task = taskMap.get(subtaskId);
-            if (task instanceof Subtask) {
-                subtasks.add((Subtask) task);
+        Epic epic = epicMap.get(epicId);
+        if (epic != null) {
+            List<Subtask> subtasks = new ArrayList<>();
+            for (int subtaskId : epic.getIdsSubtask()) {
+                Subtask subtask = subtaskMap.get(subtaskId);
+                if (subtask != null) {
+                    subtasks.add(subtask);
+                }
             }
+            return subtasks;
+        } else {
+            return new ArrayList<>();
         }
-        return subtasks;
     }
 
-    public List<Integer> getSubtaskMap(int epicId) {
+    public List<Subtask> getAllSubtasks() {
+        return new ArrayList<>(subtaskMap.values());
+    }
 
-        return subtaskMap.getOrDefault(epicId, Collections.emptyList());
+    public void removeAllSubtasks() {
+        subtaskMap.clear();
     }
 }
