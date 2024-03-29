@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Epic extends Task {
-    ArrayList<Integer> idsSubtask;
+ class Epic extends Task {
+   private final ArrayList<Integer> idsSubtask;
 
     public void addIdSubtasks(int idSubtask) {
         idsSubtask.add(idSubtask);

@@ -1,4 +1,4 @@
-public class Task {
+class Task {
     private final String name;
     private final String description;
 
