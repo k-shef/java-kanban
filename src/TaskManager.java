@@ -63,7 +63,32 @@ public class TaskManager {
     }
 
     public void updateEpic(Epic updatedEpic) {
-        epicMap.put(updatedEpic.getId(), updatedEpic);
+        Epic trueEpic = epicMap.get(updatedEpic.getId());
+        if (trueEpic != null) {
+            trueEpic.setName(updatedEpic.getName());
+            trueEpic.setDescription(updatedEpic.getDescription());
+            epicMap.put(updatedEpic.getId(), trueEpic);
+        }
+    }
+
+    private void updateStatusEpic(int epicId) {
+        Epic epic = epicMap.get(epicId);
+        if (epic != null) {
+            boolean allSubtasksDone = true;
+            for (int subtaskId : epic.getIdsSubtask()) {
+                Subtask subtaskInEpic = subtaskMap.get(subtaskId);
+                if (subtaskInEpic.getStatus() != StatusTask.DONE) {
+                    allSubtasksDone = false;
+                    break;
+                }
+            }
+            if (allSubtasksDone) {
+                epic.setStatus(StatusTask.DONE);
+            } else {
+                epic.setStatus(StatusTask.IN_PROGRESS);
+            }
+            updateEpic(epic);
+        }
     }
 
     public void removeEpicById(int id) {
@@ -84,8 +109,8 @@ public class TaskManager {
             epic.addIdSubtasks(subtask.getId());
             if (epic.getStatus() == StatusTask.DONE) {
                 epic.setStatus(StatusTask.IN_PROGRESS);
+                updateEpic(epic);
             }
-            epicMap.put(epic.getId(), epic);
             return subtask;
         }
         return null;
@@ -94,23 +119,7 @@ public class TaskManager {
     public void updateSubtask(Subtask subtask) {
         if (subtaskMap.containsKey(subtask.getId())) {
             subtaskMap.put(subtask.getId(), subtask);
-            Epic epic = getEpicById(subtask.getEpicId());
-            if (epic != null) {
-                boolean allSubtasksDone = true;
-                for (int subtaskId : epic.getIdsSubtask()) {
-                    Subtask subtaskInEpic = subtaskMap.get(subtaskId);
-                    if (subtaskInEpic.getStatus() != StatusTask.DONE) {
-                        allSubtasksDone = false;
-                        break;
-                    }
-                }
-                if (allSubtasksDone) {
-                    epic.setStatus(StatusTask.DONE);
-                } else {
-                    epic.setStatus(StatusTask.IN_PROGRESS);
-                }
-                updateEpic(epic);
-            }
+            updateStatusEpic(subtask.getEpicId());
         }
     }
 
@@ -138,17 +147,7 @@ public class TaskManager {
     public void removeAllSubtasks() {
         subtaskMap.clear();
         for (Epic epic : epicMap.values()) {
-            boolean allSubtasksDone = true;
-            for (int subtaskId : epic.getIdsSubtask()) {
-                if (!subtaskMap.containsKey(subtaskId)) {
-                    allSubtasksDone = false;
-                    break;
-                }
-            }
-            if (allSubtasksDone) {
-                epic.setStatus(StatusTask.NEW);
-                updateEpic(epic);
-            }
+            updateStatusEpic(epic.getId());
         }
     }
 
@@ -157,19 +156,10 @@ public class TaskManager {
         if (removedSubtask != null) {
             Epic epic = getEpicById(removedSubtask.getEpicId());
             if (epic != null) {
-                boolean anySubtasksInProgress = false;
-                for (int subtaskId : epic.getIdsSubtask()) {
-                    Subtask subtaskInEpic = subtaskMap.get(subtaskId);
-                    if (subtaskInEpic != null && subtaskInEpic.getStatus() == StatusTask.IN_PROGRESS) {
-                        anySubtasksInProgress = true;
-                        break;
-                    }
-                }
-                if (!anySubtasksInProgress) {
-                    epic.setStatus(StatusTask.NEW);
-                    updateEpic(epic);
-                }
+                epic.getIdsSubtask().remove(Integer.valueOf(id));
+                updateStatusEpic(epic.getId());
             }
         }
     }
 }
+

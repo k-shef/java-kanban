@@ -3,13 +3,11 @@ public class Main {
         // Создание объекта TaskManager
         TaskManager taskManager = new TaskManager();
 
-        // Создание двух задач
         Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW, 0);
         Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, 0);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
 
-        // Создание эпика с двумя подзадачами
         Epic epic1 = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW, 0);
         taskManager.createEpic(epic1);
         Subtask subtask1 = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, 0, epic1.getId());
@@ -17,7 +15,6 @@ public class Main {
         Subtask subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", StatusTask.NEW, 0, epic1.getId());
         taskManager.createSubtask(subtask2);
 
-// Создание эпика с одной подзадачей
         Epic epic2 = new Epic("Велосипед", "Купить велик ребенку", StatusTask.NEW, 0);
         taskManager.createEpic(epic2);
         Subtask subtask3 = new Subtask("Выбор велосипеда", "Выбрать и купить велосипед", StatusTask.NEW, 0, epic2.getId());
@@ -64,8 +61,8 @@ public class Main {
 
         // Проверка статуса эпика после изменения
         Epic epik = taskManager.getEpicById(epic1.getId());
-        if (epic != null) {
-            System.out.println("\nСтатус эпика \"" + epic.getName() + "\": " + epic.getStatus());
+        if (epik != null) {
+            System.out.println("\nСтатус эпика \"" + epik.getName() + "\": " + epik.getStatus());
         } else {
             System.out.println("Эпик не найден.");
         }
@@ -83,11 +80,11 @@ public class Main {
 
         System.out.println("\nСписок эпиков после удаления эпика 2:");
         for (Epic epiic : taskManager.getAllEpics()) {
-            System.out.println(epic.getName());
+            System.out.println(epiic.getName());
         }
 
         System.out.println("\nСписок подзадач для эпика 1 после удаления подзадачи 1:");
-        for(Subtask subtask : taskManager.getAllSubtasksByEpicId(epic1.getId())) {
+        for (Subtask subtask : taskManager.getAllSubtasksByEpicId(epic1.getId())) {
             System.out.println(subtask.getName());
         }
     }

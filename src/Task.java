@@ -1,10 +1,18 @@
 class Task {
-    private final String name;
-    private final String description;
+    private  String name;
+    private  String description;
 
     private StatusTask status;
     private int id = 0;
 
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public void setId(int id) {
         this.id = id;
