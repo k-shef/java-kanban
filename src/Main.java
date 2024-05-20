@@ -1,23 +1,33 @@
+import manager.Managers;
+import manager.TaskHistoryManager;
+import manager.TaskManager;
+import model.Epic;
+import model.StatusTask;
+import model.Subtask;
+import model.Task;
+
 public class Main {
     public static void main(String[] args) {
-        // Создание объекта TaskManager
-        TaskManager taskManager = new TaskManager();
+        // Создание объекта manager.TaskManager
+        Managers managers = new Managers();
 
-        Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW, 0);
-        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, 0);
+        TaskManager taskManager = managers.getDefault();
+
+        Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW);
+        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
 
-        Epic epic1 = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW, 0);
+        Epic epic1 = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW);
         taskManager.createEpic(epic1);
-        Subtask subtask1 = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, 0, epic1.getId());
+        Subtask subtask1 = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, epic1.getId());
         taskManager.createSubtask(subtask1);
-        Subtask subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", StatusTask.NEW, 0, epic1.getId());
+        Subtask subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", StatusTask.NEW,  epic1.getId());
         taskManager.createSubtask(subtask2);
 
-        Epic epic2 = new Epic("Велосипед", "Купить велик ребенку", StatusTask.NEW, 0);
+        Epic epic2 = new Epic("Велосипед", "Купить велик ребенку", StatusTask.NEW);
         taskManager.createEpic(epic2);
-        Subtask subtask3 = new Subtask("Выбор велосипеда", "Выбрать и купить велосипед", StatusTask.NEW, 0, epic2.getId());
+        Subtask subtask3 = new Subtask("Выбор велосипеда", "Выбрать и купить велосипед", StatusTask.NEW, epic2.getId());
         taskManager.createSubtask(subtask3);
 
         // Печать списков эпиков, задач и подзадач
@@ -25,6 +35,7 @@ public class Main {
         for (Epic epic : taskManager.getAllEpics()) {
             System.out.println(epic.getName());
         }
+
 
         System.out.println("\nСписок задач:");
         for (Task task : taskManager.getAllTasks()) {
@@ -87,5 +98,11 @@ public class Main {
         for (Subtask subtask : taskManager.getAllSubtasksByEpicId(epic1.getId())) {
             System.out.println(subtask.getName());
         }
+
+        System.out.println("\nИстория:");
+        for (Task task : taskManager.getHistory()) {
+            System.out.println(task.getName());
+        }
+
     }
 }
