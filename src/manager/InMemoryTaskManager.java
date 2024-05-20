@@ -1,13 +1,13 @@
 package manager;
 
+import model.Epic;
+import model.StatusTask;
+import model.Subtask;
+import model.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import model.Epic;
-import model.StatusTask;
-import model.Task;
-import model.Subtask;
 
 
 public class InMemoryTaskManager implements TaskManager {
@@ -39,6 +39,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int id) {
         Task task = taskMap.get(id);
+        historyManager.addToHistory(task);
         return task;
     }
 
@@ -52,7 +53,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
         task.setId(id);
         taskMap.put(task.getId(), task);
-        historyManager.addToHistory(task);
         return task;
     }
 
@@ -82,6 +82,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int id) {
         Epic epicTask = epicMap.get(id);
+        historyManager.addToHistory(epicMap.get(id));
         return epicTask;
     }
 
@@ -90,7 +91,6 @@ public class InMemoryTaskManager implements TaskManager {
         int id = generateId++;
         epic.setId(id);
         epicMap.put(epic.getId(), epic);
-        historyManager.addToHistory(epic);
         return epic;
     }
 
@@ -143,7 +143,6 @@ public class InMemoryTaskManager implements TaskManager {
             subtask.setId(id);
             subtaskMap.put(subtask.getId(), subtask);
             epic.addIdSubtasks(id);
-            historyManager.addToHistory(subtask);
             if (epic.getStatus() == StatusTask.DONE) {
                 epic.setStatus(StatusTask.IN_PROGRESS);
                 updateEpic(epic);
@@ -164,6 +163,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtasksById(int subtaskId) {
         Subtask subtask = subtaskMap.get(subtaskId);
+        historyManager.addToHistory(subtask);
         return subtask;
     }
 

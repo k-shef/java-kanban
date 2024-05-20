@@ -4,16 +4,13 @@ package manager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static model.StatusTask.NEW;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryTaskManagerTest {
 
@@ -60,8 +57,10 @@ public class InMemoryTaskManagerTest {
         // Создаем и добавляем задачу в менеджер
         Task task1 = new Task("Задача для истории1", "Описание задачи для истории", NEW);
         taskManager.createTask(task1);
+        taskManager.getTaskById(1);
         Task task2 = new Task("Задача для истории1", "Описание задачи для истории", NEW);
         taskManager.createTask(task2);
+        taskManager.getTaskById(2);
 
         // Получаем историю из менеджера
         List<Task> history = taskManager.getHistory();
