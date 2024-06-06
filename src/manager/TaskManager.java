@@ -32,7 +32,7 @@ public interface TaskManager {
 
     void updateEpic(Epic updatedEpic);
 
-     void updateStatusEpic(int epicId);
+    void updateStatusEpic(int epicId);
 
 
     void removeEpicById(int id);

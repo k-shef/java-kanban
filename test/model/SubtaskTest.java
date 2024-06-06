@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static model.StatusTask.NEW;
@@ -24,9 +23,9 @@ public class SubtaskTest {
         taskManager = managers.getDefault();
         epic = new Epic("Починить авто", "Ремонт подвески машины", NEW);
         taskManager.createEpic(epic);
-        subtask = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", NEW,  epic.getId());
+        subtask = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", NEW, epic.getId());
         taskManager.createSubtask(subtask);
-        subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", NEW,  epic.getId());
+        subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", NEW, epic.getId());
         taskManager.createSubtask(subtask2);
     }
 
