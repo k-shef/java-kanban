@@ -65,7 +65,9 @@ public class InMemoryTaskHistoryManager implements TaskHistoryManager {
     }
 
     private void removeNode(Node<Task> node) {
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
 
         if (node.prev != null) {
             node.prev.next = node.next;
