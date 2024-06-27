@@ -1,3 +1,4 @@
+import manager.FileBackedTaskManager;
 import manager.InMemoryTaskHistoryManager;
 import manager.InMemoryTaskManager;
 import manager.TaskManager;
@@ -6,28 +7,48 @@ import model.StatusTask;
 import model.Subtask;
 import model.Task;
 
+import java.io.File;
+import java.io.IOException;
+
 public class Main {
     public static void main(String[] args) {
         TaskManager taskManager = new InMemoryTaskManager(new InMemoryTaskHistoryManager());
+        File file = new File("src/tasks.csv");  // Укажите путь к файлу
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
+        FileBackedTaskManager taskFromFile = FileBackedTaskManager.loadFromFile(file);
         // Создание задач
         Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW);
         Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
+        taskFromFile.createTask(task1);
+        taskFromFile.createTask(task2);
 
         // Создание эпиков и подзадач
         Epic epic1 = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW);
         taskManager.createEpic(epic1);
+        taskFromFile.createEpic(epic1);
         Subtask subtask1 = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, epic1.getId());
         Subtask subtask2 = new Subtask("Отдать в сервис", "Отвезти машину в сервис", StatusTask.NEW, epic1.getId());
         Subtask subtask3 = new Subtask("Забрать из сервиса", "Приехать в сервис за авто", StatusTask.NEW, epic1.getId());
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
         taskManager.createSubtask(subtask3);
+        taskFromFile.createSubtask(subtask1);
+        taskFromFile.createSubtask(subtask2);
+        taskFromFile.createSubtask(subtask3);
+
 
         Epic epic2 = new Epic("Велосипед", "Купить велик ребенку", StatusTask.NEW);
         taskManager.createEpic(epic2);
+        taskFromFile.createEpic(epic2);
 
         // Запрос созданных задач и печать истории
         taskManager.getTaskById(task1.getId());
@@ -37,9 +58,21 @@ public class Main {
         taskManager.getSubtasksById(subtask1.getId());
         taskManager.getSubtasksById(subtask2.getId());
         taskManager.getSubtasksById(subtask3.getId());
+        // Запрос созданных задач и печать истории from file
+        taskFromFile.getTaskById(task1.getId());
+        taskFromFile.getTaskById(task2.getId());
+        taskFromFile.getTaskById(epic1.getId());
+        taskFromFile.getTaskById(epic2.getId());
+        taskFromFile.getSubtasksById(subtask1.getId());
+        taskFromFile.getSubtasksById(subtask2.getId());
+        taskFromFile.getSubtasksById(subtask3.getId());
+
 
         System.out.println("История после запросов:");
         printHistory(taskManager);
+        System.out.println();
+        System.out.println("История после запросов from file:");
+        printHistory(taskFromFile);
 
         // Удаление задачи, которая есть в истории
         taskManager.removeTaskById(task1.getId());

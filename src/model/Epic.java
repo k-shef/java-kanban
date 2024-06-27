@@ -33,4 +33,15 @@ public class Epic extends Task {
     public int hashCode() {
         return Objects.hash(super.hashCode(), idsSubtask);
     }
+
+    @Override
+    public String toString() {
+        return "Epic{" +
+                "name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", status=" + getStatus() +
+                ", id=" + getId() +
+                ", idsSubtask=" + idsSubtask +
+                '}';
+    }
 }

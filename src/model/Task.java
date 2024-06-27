@@ -77,4 +77,8 @@ public class Task {
                 ", id=" + id +
                 '}';
     }
+
+    public String toCsvString() {
+        return id + "," + name + "," + description + "," + status;
+    }
 }

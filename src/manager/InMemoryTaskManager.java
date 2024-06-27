@@ -12,18 +12,18 @@ import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    private final HashMap<Integer, Task> taskMap = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtaskMap = new HashMap<>();
-    private final HashMap<Integer, Epic> epicMap = new HashMap<>();
+    protected final HashMap<Integer, Task> taskMap = new HashMap<>();
+    protected final HashMap<Integer, Subtask> subtaskMap = new HashMap<>();
+    protected final HashMap<Integer, Epic> epicMap = new HashMap<>();
 
-    private final TaskHistoryManager historyManager;
+    protected final TaskHistoryManager historyManager;
 
     public InMemoryTaskManager(TaskHistoryManager historyManager) {
         this.historyManager = historyManager;
     }
 
 
-    private int generateId = 1;
+    protected int generateId = 1;
 
     // Методы работы с model.Task
     @Override
