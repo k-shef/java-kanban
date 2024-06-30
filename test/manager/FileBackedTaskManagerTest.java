@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,11 +20,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileBackedTaskManagerTest {
 
     private File tempFile;
+
+    {
+        try {
+            tempFile = File.createTempFile("test_tasks", ".csv");
+            tempFile = File.createTempFile("test_tasks", ".csv", new File("C:/newFolder"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private FileBackedTaskManager taskManager;
 
     @BeforeEach
     void setUp() throws IOException {
-        tempFile = File.createTempFile("test_tasks", ".csv");
+
+        if (!tempFile.exists()) {
+            try {
+                tempFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         taskManager = new FileBackedTaskManager(new InMemoryTaskHistoryManager(), tempFile);
     }
 
@@ -87,6 +106,36 @@ class FileBackedTaskManagerTest {
         List<Task> tasks = loadedManager.getAllTasks();
         assertEquals(1, tasks.size());
         assertEquals("Task 2", tasks.get(0).getName());
+    }
+
+    @Test
+    void shouldSetNextIdCorrectlyAfterLoadingFromFile() throws IOException {
+        // Создаем несколько задач, эпиков и подзадач
+        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW);
+        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS);
+        taskManager.createTask(task1);
+        taskManager.createTask(task2);
+        Epic epic1 = new Epic("Epic 1", "Epic Description 1", StatusTask.NEW);
+        taskManager.createEpic(epic1);
+        Subtask subtask1 = new Subtask("Subtask 1", "Subtask Description 1", StatusTask.NEW, epic1.getId());
+        Subtask subtask2 = new Subtask("Subtask 2", "Subtask Description 2", StatusTask.DONE, epic1.getId());
+        taskManager.createSubtask(subtask1);
+        taskManager.createSubtask(subtask2);
+
+        // Сохраняем менеджер в файл
+        taskManager.save();
+
+        // Загружаем менеджер из файла
+        FileBackedTaskManager loadedTaskManager = FileBackedTaskManager.loadFromFile(tempFile);
+
+        // Проверяем, что задачи были успешно добавлены в исходный менеджер
+        assertEquals(2, loadedTaskManager.getAllTasks().size(), "Количество задач в загруженном менеджере неверно");
+        assertEquals(1, loadedTaskManager.getAllEpics().size(), "Количество эпиков в загруженном менеджере неверно");
+        assertEquals(2, loadedTaskManager.getAllSubtasks().size(), "Количество подзадач в загруженном менеджере неверно");
+
+        // Проверяем, что значения идентификаторов были восстановлены корректно
+        // После загрузки из файла значение generateId должно быть равно максимальному идентификатору
+        assertEquals(5, loadedTaskManager.generateId, "Значение идентификатора после загрузки неверно");
     }
 
     @Test

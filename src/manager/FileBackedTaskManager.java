@@ -68,10 +68,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static FileBackedTaskManager loadFromFile(File file) {
         TaskHistoryManager historyManager = new InMemoryTaskHistoryManager();
         FileBackedTaskManager taskManager = new FileBackedTaskManager(historyManager, file);
+        int maxId = 0;
 
         try {
             List<String> lines = Files.readAllLines(Paths.get(file.toURI()), StandardCharsets.UTF_8);
-            boolean isHistory = false;
 
             for (int i = 1; i < lines.size(); i++) {
                 String line = lines.get(i);
@@ -79,54 +79,45 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     continue;
                 }
 
-                if (line.equals("History")) {
-                    isHistory = true;
-                    continue;
+                String[] fields = line.split(",");
+                int id = Integer.parseInt(fields[0]);
+                TypeTask type = TypeTask.valueOf(fields[1]);
+                String name = fields[2];
+                StatusTask status = StatusTask.valueOf(fields[3]);
+                String description = fields[4];
+
+                if (id > maxId) {
+                    maxId = id;
                 }
 
-                if (isHistory) {
-                    int id = Integer.parseInt(line.trim());
-                    Task task = taskManager.getTaskById(id);
-                    if (task == null) task = taskManager.getEpicById(id);
-                    if (task == null) task = taskManager.getSubtasksById(id);
-                    if (task != null) {
-                        taskManager.historyManager.addToHistory(task);
-                    }
-                } else {
-                    String[] fields = line.split(",");
-                    int id = Integer.parseInt(fields[0]);
-                    TypeTask type = TypeTask.valueOf(fields[1]);
-                    String name = fields[2];
-                    StatusTask status = StatusTask.valueOf(fields[3]);
-                    String description = fields[4];
-
-                    switch (type) {
-                        case TASK:
-                            Task task = new Task(name, description, status, id);
-                            taskManager.taskMap.put(id, task);
-                            break;
-                        case EPIC:
-                            Epic epic = new Epic(name, description, status);
-                            epic.setId(id);
-                            taskManager.epicMap.put(id, epic);
-                            break;
-                        case SUBTASK:
-                            int epicId = Integer.parseInt(fields[5]);
-                            Subtask subtask = new Subtask(name, description, status, epicId);
-                            subtask.setId(id);
-                            taskManager.subtaskMap.put(id, subtask);
-                            Epic parentEpic = taskManager.epicMap.get(epicId);
-                            if (parentEpic != null) {
-                                parentEpic.addIdSubtasks(id);
-                            }
-                            break;
-                    }
+                switch (type) {
+                    case TASK:
+                        Task task = new Task(name, description, status, id);
+                        taskManager.taskMap.put(id, task);
+                        break;
+                    case EPIC:
+                        Epic epic = new Epic(name, description, status);
+                        epic.setId(id);
+                        taskManager.epicMap.put(id, epic);
+                        break;
+                    case SUBTASK:
+                        int epicId = Integer.parseInt(fields[5]);
+                        Subtask subtask = new Subtask(name, description, status, epicId);
+                        subtask.setId(id);
+                        taskManager.subtaskMap.put(id, subtask);
+                        Epic parentEpic = taskManager.epicMap.get(epicId);
+                        if (parentEpic != null) {
+                            parentEpic.addIdSubtasks(id);
+                        }
+                        break;
                 }
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Произошла ошибка при загрузке данных.", e);
         }
 
+
+        taskManager.generateId = maxId;
         return taskManager;
     }
 

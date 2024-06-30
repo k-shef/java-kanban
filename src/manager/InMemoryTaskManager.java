@@ -25,6 +25,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     protected int generateId = 1;
 
+    protected int getNextUniqueId() {
+        int id = generateId++;
+        while (taskMap.containsKey(id) || subtaskMap.containsKey(id) || epicMap.containsKey(id)) {
+            id = generateId++;
+        }
+        return id;
+    }
+
+
     // Методы работы с model.Task
     @Override
     public ArrayList<Task> getAllTasks() {
@@ -54,7 +63,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (task.getId() > 0) {
             id = task.getId();
         } else {
-            id = generateId++;
+            id = getNextUniqueId();
         }
         task.setId(id);
         taskMap.put(task.getId(), task);
@@ -104,7 +113,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic createEpic(Epic epic) {
-        int id = generateId++;
+        int id = getNextUniqueId();
         epic.setId(id);
         epicMap.put(epic.getId(), epic);
         return epic;
@@ -157,7 +166,7 @@ public class InMemoryTaskManager implements TaskManager {
     public Subtask createSubtask(Subtask subtask) {
         Epic epic = epicMap.get(subtask.getEpicId());
         if (epic != null) {
-            int id = generateId++;
+            int id = getNextUniqueId();
             subtask.setId(id);
             subtaskMap.put(subtask.getId(), subtask);
             epic.addIdSubtasks(id);

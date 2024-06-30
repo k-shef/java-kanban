@@ -13,7 +13,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         TaskManager taskManager = new InMemoryTaskManager(new InMemoryTaskHistoryManager());
-        File file = new File("src/tasks.csv");  // Укажите путь к файлу
+        File file = new File("src/tasks.csv");    // Создание файла для сохранения данных
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -22,13 +22,13 @@ public class Main {
             }
         }
 
-        FileBackedTaskManager taskFromFile = FileBackedTaskManager.loadFromFile(file);
+        FileBackedTaskManager taskFromFile = new FileBackedTaskManager(new InMemoryTaskHistoryManager(), file);
+
         // Создание задач
         Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW);
         Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
-        taskFromFile.createTask(task1);
         taskFromFile.createTask(task2);
 
         // Создание эпиков и подзадач
