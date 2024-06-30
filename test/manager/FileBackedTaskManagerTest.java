@@ -24,7 +24,7 @@ class FileBackedTaskManagerTest {
     {
         try {
             tempFile = File.createTempFile("test_tasks", ".csv");
-            tempFile = File.createTempFile("test_tasks", ".csv", new File("C:/newFolder"));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
