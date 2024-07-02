@@ -27,6 +27,7 @@ public class Task {
         this.status = status;
         this.id = id;
     }
+
     public Task(String name, String description, StatusTask status) {
         this.name = name;
         this.description = description;
@@ -75,5 +76,9 @@ public class Task {
                 ", status=" + status +
                 ", id=" + id +
                 '}';
+    }
+
+    public String toCsvString() {
+        return id + "," + name + "," + description + "," + status;
     }
 }

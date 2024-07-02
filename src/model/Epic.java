@@ -1,7 +1,5 @@
 package model;
 
-import model.Task;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,5 +32,16 @@ public class Epic extends Task {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), idsSubtask);
+    }
+
+    @Override
+    public String toString() {
+        return "Epic{" +
+                "name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", status=" + getStatus() +
+                ", id=" + getId() +
+                ", idsSubtask=" + idsSubtask +
+                '}';
     }
 }
