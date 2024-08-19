@@ -22,7 +22,7 @@ public class Main {
             }
         }
 
-        FileBackedTaskManager taskFromFile = new FileBackedTaskManager( file);
+        FileBackedTaskManager taskFromFile = new FileBackedTaskManager(file);
 
         // Создание задач
         Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW, Duration.ofMinutes(30), LocalDateTime.now().plusDays(1));
