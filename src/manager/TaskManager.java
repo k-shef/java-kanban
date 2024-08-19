@@ -15,9 +15,9 @@ public interface TaskManager {
 
     Task getTaskById(int id);
 
-    Task createTask(Task task);
+    Task createTask(Task task) throws TimeOverlapException;
 
-    void updateTask(Task updatedTask);
+    void updateTask(Task updatedTask) throws TimeOverlapException;
 
     void removeTaskById(int id);
 
@@ -38,9 +38,9 @@ public interface TaskManager {
     void removeEpicById(int id);
 
     // Методы работы с model.Subtask
-    Subtask createSubtask(Subtask subtask);
+    Subtask createSubtask(Subtask subtask) throws TimeOverlapException;
 
-    void updateSubtask(Subtask subtask);
+    void updateSubtask(Subtask subtask) throws TimeOverlapException;
 
     Subtask getSubtasksById(int subtaskId);
 

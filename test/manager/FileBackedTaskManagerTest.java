@@ -12,37 +12,23 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
-
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     private File tempFile;
 
-    {
-        try {
-            tempFile = File.createTempFile("test_tasks", ".csv");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private FileBackedTaskManager taskManager;
-
     @BeforeEach
-    void setUp() throws IOException {
+    public void setUp() throws IOException {
 
-        if (!tempFile.exists()) {
-            try {
-                tempFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        taskManager = new FileBackedTaskManager(new InMemoryTaskHistoryManager(), tempFile);
+        tempFile = File.createTempFile("test_tasks", ".csv");
+        taskManager = new FileBackedTaskManager(tempFile);
+
+
     }
 
     @AfterEach
@@ -51,26 +37,66 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void testSaveAndLoadTasks() {
-        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW);
-        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS);
-        taskManager.createTask(task1);
-        taskManager.createTask(task2);
+    public void readTasksInEmptyFileTest() throws IOException {
+        FileBackedTaskManager f = FileBackedTaskManager.loadFromFile(tempFile);
+        List<Task> list = f.getAllTasks();
+        List<Epic> list1 = f.getAllEpics();
+        List<Subtask> list2 = f.getAllSubtasks();
 
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
-
-        List<Task> tasks = loadedManager.getAllTasks();
-        assertEquals(2, tasks.size());
-        assertEquals("Task 1", tasks.get(0).getName());
-        assertEquals("Task 2", tasks.get(1).getName());
+        assertEquals(0, list.size(),
+                "Из пустого файла зкземпляр класса FileBackedTaskManager создается не пустым.");
+        assertEquals(0, list1.size(),
+                "Из пустого файла зкземпляр класса FileBackedTaskManager создается не пустым");
+        assertEquals(0, list2.size(),
+                "Из пустого файла зкземпляр класса FileBackedTaskManager создается не пустым");
     }
 
     @Test
-    void testSaveAndLoadEpicsAndSubtasks() {
+    public void writeTasksInFileTest() throws IOException, TimeOverlapException {
+        Task task1 = new Task("Test addNewTask", "Test addNewTask description", StatusTask.NEW,
+                Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 0, 0));
+        taskManager.createTask(task1); //id = 1
+        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, Duration.ofMinutes(45), LocalDateTime.of(2024, 1, 2, 0, 0));
+        taskManager.createTask(task2);
+        Epic epic1 = new Epic("Test addNewEpic", "Test addNewEpic description", StatusTask.NEW);
+        taskManager.createEpic(epic1); //id = 2
+
+        Subtask subtask1 = new Subtask("Test addNewSubTask", "Test addNewSubTask description", StatusTask.NEW, epic1.getId(), Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0)); //id = 3
+        taskManager.createSubtask(subtask1);
+
+
+        String fr = Files.readString(tempFile.toPath());
+        String[] lines = fr.split(";");
+
+
+        assertEquals(6, lines.length, "Количество строк не совпадает с ожидаемым");
+        assertEquals("id,type,name,status,description,duration,startTime,endTime,idsSubtask,epic", lines[0],
+                "Базовая строка не добавлена");
+        assertEquals("\r\n1,TASK,Test addNewTask,NEW,Test addNewTask description,90,2024-01-01T00:00,2024-01-01T01:30",
+                lines[1], "Задачи добавляются неверно");
+    }
+
+    @Test
+    void testSaveAndLoadTasks() throws TimeOverlapException, IOException {
+        Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW, Duration.parse("PT30M"), LocalDateTime.of(2024, 7, 12, 9, 0));
+        taskManager.createTask(task1);
+        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, Duration.ofMinutes(45), LocalDateTime.of(2024, 7, 10, 5, 0));
+        taskManager.createTask(task2);
+
+        TaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
+
+        List<Task> tasks = loadedManager.getAllTasks();
+        assertEquals(2, tasks.size());
+        assertEquals("В магазин", tasks.get(0).getName());
+        assertEquals("Уборка", tasks.get(1).getName());
+    }
+
+    @Test
+    void testSaveAndLoadEpicsAndSubtasks() throws TimeOverlapException {
         Epic epic1 = new Epic("Epic1", "Epic Description", StatusTask.NEW);
         taskManager.createEpic(epic1);
-        Subtask subtask1 = new Subtask("Subtask1", "Subtask1 Description", StatusTask.NEW, epic1.getId());
-        Subtask subtask2 = new Subtask("Subtask2", "Subtask2 Description", StatusTask.NEW, epic1.getId());
+        Subtask subtask1 = new Subtask("Subtask1", "Subtask1 Description", StatusTask.NEW, epic1.getId(), Duration.ofHours(2), LocalDateTime.of(2024, 7, 14, 5, 0));
+        Subtask subtask2 = new Subtask("Subtask2", "Subtask2 Description", StatusTask.NEW, epic1.getId(), Duration.ofHours(1), LocalDateTime.of(2024, 7, 15, 7, 0));
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
 
@@ -93,15 +119,15 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void testRemoveTask() {
-        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW);
-        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS);
+    public void testRemoveTask() throws TimeOverlapException {
+        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW, Duration.ofMinutes(35), LocalDateTime.now().plusDays(3));
+        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS, Duration.ofMinutes(48), LocalDateTime.now().plusDays(4));
         taskManager.createTask(task1);
         taskManager.createTask(task2);
 
         taskManager.removeTaskById(task1.getId());
 
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
+        TaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
 
         List<Task> tasks = loadedManager.getAllTasks();
         assertEquals(1, tasks.size());
@@ -109,51 +135,37 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void shouldSetNextIdCorrectlyAfterLoadingFromFile() throws IOException {
-        // Создаем несколько задач, эпиков и подзадач
-        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW);
-        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS);
+    void shouldSetNextIdCorrectlyAfterLoadingFromFile() throws IOException, TimeOverlapException {
+        Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW, Duration.ofMinutes(35), LocalDateTime.now().plusDays(3));
+        Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS, Duration.ofMinutes(48), LocalDateTime.now().plusDays(4));
         taskManager.createTask(task1);
         taskManager.createTask(task2);
         Epic epic1 = new Epic("Epic 1", "Epic Description 1", StatusTask.NEW);
         taskManager.createEpic(epic1);
-        Subtask subtask1 = new Subtask("Subtask 1", "Subtask Description 1", StatusTask.NEW, epic1.getId());
-        Subtask subtask2 = new Subtask("Subtask 2", "Subtask Description 2", StatusTask.DONE, epic1.getId());
+        Subtask subtask1 = new Subtask("Subtask1", "Subtask1 Description", StatusTask.NEW, epic1.getId(), Duration.ofHours(1), LocalDateTime.now().plusDays(5));
+        Subtask subtask2 = new Subtask("Subtask2", "Subtask2 Description", StatusTask.DONE, epic1.getId(), Duration.ofHours(3), LocalDateTime.now().plusDays(12));
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
-
-        // Сохраняем менеджер в файл
         taskManager.save();
-
-        // Загружаем менеджер из файла
         FileBackedTaskManager loadedTaskManager = FileBackedTaskManager.loadFromFile(tempFile);
-
-        // Проверяем, что задачи были успешно добавлены в исходный менеджер
         assertEquals(2, loadedTaskManager.getAllTasks().size(), "Количество задач в загруженном менеджере неверно");
         assertEquals(1, loadedTaskManager.getAllEpics().size(), "Количество эпиков в загруженном менеджере неверно");
         assertEquals(2, loadedTaskManager.getAllSubtasks().size(), "Количество подзадач в загруженном менеджере неверно");
-
-        // Проверяем, что значения идентификаторов были восстановлены корректно
-        // После загрузки из файла значение generateId должно быть равно максимальному идентификатору
-        assertEquals(5, loadedTaskManager.generateId, "Значение идентификатора после загрузки неверно");
+        assertEquals(5 + 1, loadedTaskManager.generateId, "Значение идентификатора после загрузки неверно");
     }
 
     @Test
-    void testRemoveEpicAndSubtasks() {
+    void testRemoveEpicAndSubtasks() throws TimeOverlapException {
         Epic epic = new Epic("Epic 1", "Description Epic 1", StatusTask.NEW);
         taskManager.createEpic(epic);
-        Subtask subtask1 = new Subtask("Subtask 1", "Description Subtask 1", StatusTask.NEW, epic.getId());
-        Subtask subtask2 = new Subtask("Subtask 2", "Description Subtask 2", StatusTask.DONE, epic.getId());
+        Subtask subtask1 = new Subtask("Subtask1", "Subtask1 Description", StatusTask.NEW, epic.getId(), Duration.ofHours(2), LocalDateTime.now().plusDays(4));
+        Subtask subtask2 = new Subtask("Subtask2", "Subtask2 Description", StatusTask.DONE, epic.getId(), Duration.ofHours(1), LocalDateTime.now().plusDays(5));
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
-
         taskManager.removeEpicById(epic.getId());
-
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
-
         List<Epic> epics = loadedManager.getAllEpics();
         assertEquals(0, epics.size());
-
         List<Subtask> subtasks = loadedManager.getAllSubtasks();
         assertEquals(0, subtasks.size());
     }
