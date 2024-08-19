@@ -74,7 +74,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
             taskManager.createTask(task5);
             taskManager.createTask(task6);
         } catch (TimeOverlapException e) {
-            System.out.println("Ошибка: задача пересекается по времени с существующими задачами. " + e.getMessage());
+            //System.out.println("Ошибка: задача пересекается по времени с существующими задачами. " + e.getMessage());
         }
         int size = taskManager.getAllTasks().size();
         assertEquals(2, size, "Проверка на интервалы не срабатывает");
