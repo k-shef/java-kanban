@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -37,7 +36,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    public void readTasksInEmptyFileTest() throws IOException {
+    public void readTasksInEmptyFileTest() {
         FileBackedTaskManager f = FileBackedTaskManager.loadFromFile(tempFile);
         List<Task> list = f.getAllTasks();
         List<Epic> list1 = f.getAllEpics();
@@ -60,7 +59,6 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         taskManager.createTask(task2);
         Epic epic1 = new Epic("Test addNewEpic", "Test addNewEpic description", StatusTask.NEW);
         taskManager.createEpic(epic1); //id = 2
-
         Subtask subtask1 = new Subtask("Test addNewSubTask", "Test addNewSubTask description", StatusTask.NEW, epic1.getId(), Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0)); //id = 3
         taskManager.createSubtask(subtask1);
 
@@ -77,7 +75,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void testSaveAndLoadTasks() throws TimeOverlapException, IOException {
+    void testSaveAndLoadTasks() throws TimeOverlapException {
         Task task1 = new Task("В магазин", "Сходить в пятерочку", StatusTask.NEW, Duration.parse("PT30M"), LocalDateTime.of(2024, 7, 12, 9, 0));
         taskManager.createTask(task1);
         Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, Duration.ofMinutes(45), LocalDateTime.of(2024, 7, 10, 5, 0));
@@ -135,7 +133,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void shouldSetNextIdCorrectlyAfterLoadingFromFile() throws IOException, TimeOverlapException {
+    void shouldSetNextIdCorrectlyAfterLoadingFromFile() throws TimeOverlapException {
         Task task1 = new Task("Task 1", "Description 1", StatusTask.NEW, Duration.ofMinutes(35), LocalDateTime.now().plusDays(3));
         Task task2 = new Task("Task 2", "Description 2", StatusTask.IN_PROGRESS, Duration.ofMinutes(48), LocalDateTime.now().plusDays(4));
         taskManager.createTask(task1);
