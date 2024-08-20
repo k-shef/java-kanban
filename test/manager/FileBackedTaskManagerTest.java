@@ -55,24 +55,23 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         Task task1 = new Task("Test addNewTask", "Test addNewTask description", StatusTask.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 0, 0));
         taskManager.createTask(task1); //id = 1
-        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW, Duration.ofMinutes(45), LocalDateTime.of(2024, 1, 2, 0, 0));
+        Task task2 = new Task("Уборка", "Загрузить посудомойку и запустить пылесос", StatusTask.NEW,
+                Duration.ofMinutes(45), LocalDateTime.of(2024, 1, 2, 0, 0));
         taskManager.createTask(task2);
         Epic epic1 = new Epic("Test addNewEpic", "Test addNewEpic description", StatusTask.NEW);
         taskManager.createEpic(epic1); //id = 2
-        Subtask subtask1 = new Subtask("Test addNewSubTask", "Test addNewSubTask description", StatusTask.NEW, epic1.getId(), Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0)); //id = 3
+        Subtask subtask1 = new Subtask("Test addNewSubTask", "Test addNewSubTask description", StatusTask.NEW,
+                epic1.getId(), Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0)); //id = 3
         taskManager.createSubtask(subtask1);
-
-
-        String fr = Files.readString(tempFile.toPath());
-        String[] lines = fr.split(";");
-
-
-        assertEquals(6, lines.length, "Количество строк не совпадает с ожидаемым");
-        assertEquals("id,type,name,status,description,duration,startTime,endTime,idsSubtask,epic", lines[0],
-                "Базовая строка не добавлена");
-        assertEquals("\r\n1,TASK,Test addNewTask,NEW,Test addNewTask description,90,2024-01-01T00:00,2024-01-01T01:30",
-                lines[1], "Задачи добавляются неверно");
+        String fileContent = Files.readString(tempFile.toPath());
+        String[] lines = fileContent.split(System.lineSeparator());
+        assertEquals(5, lines.length, "Количество строк не совпадает с ожидаемым");
+        String expectedHeader = "id,type,name,status,description,duration,startTime,endTime,idsSubtask,epic;";
+        assertEquals(expectedHeader, lines[0], "Базовая строка не добавлена");
+        String expectedTaskLine = "1,TASK,Test addNewTask,NEW,Test addNewTask description,90,2024-01-01T00:00,2024-01-01T01:30;";
+        assertEquals(expectedTaskLine, lines[1], "Задачи добавляются неверно");
     }
+
 
     @Test
     void testSaveAndLoadTasks() throws TimeOverlapException {
