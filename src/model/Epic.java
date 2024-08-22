@@ -18,42 +18,8 @@ public class Epic extends Task {
         super(name, description, status, Duration.ZERO, null);
         this.idsSubtask = new ArrayList<>();
         this.endTime = null;
-        updateDurationAndTime(subtasks);
     }
 
-    public void updateDurationAndTime(List<Subtask> subtasks) {
-        if (subtasks.isEmpty()) {
-            this.setDuration(Duration.ZERO);
-            this.setStartTime(null);
-            this.endTime = null;
-        } else {
-            LocalDateTime start = subtasks.stream()
-                    .map(Subtask::getStartTime)
-                    .filter(Objects::nonNull)
-                    .min(LocalDateTime::compareTo)
-                    .orElse(null);
-
-            LocalDateTime end = subtasks.stream()
-                    .map(subtask -> {
-                        if (subtask.getStartTime() != null && subtask.getDuration() != null) {
-                            return subtask.getStartTime().plus(subtask.getDuration());
-                        }
-                        return null;
-                    })
-                    .filter(Objects::nonNull)
-                    .max(LocalDateTime::compareTo)
-                    .orElse(null);
-
-            Duration totalDuration = subtasks.stream()
-                    .map(Subtask::getDuration)
-                    .filter(Objects::nonNull)
-                    .reduce(Duration.ZERO, Duration::plus);
-
-            this.setDuration(totalDuration);
-            this.setStartTime(start);
-            this.endTime = end;
-        }
-    }
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;

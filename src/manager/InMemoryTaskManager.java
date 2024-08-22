@@ -5,6 +5,7 @@ import model.StatusTask;
 import model.Subtask;
 import model.Task;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -234,7 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
             subtask.setId(id);
             subtaskMap.put(subtask.getId(), subtask);
             epic.addIdSubtasks(id);
-            updateEpicDurationAndTime(epic);
+            updateDurationAndTime(epic);
             if (subtask.getStartTime() != null) {
                 prioritizedTasks.add(subtask);
             }
@@ -265,7 +266,7 @@ public class InMemoryTaskManager implements TaskManager {
             if (subtask.getStartTime() != null) {
                 prioritizedTasks.add(subtask);
             }
-            updateEpicDurationAndTime(epicMap.get(subtask.getEpicId()));
+            updateDurationAndTime(epicMap.get(subtask.getEpicId()));
             updateStatusEpic(subtask.getEpicId());
         }
     }
@@ -322,16 +323,11 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = epicMap.get(removedSubtask.getEpicId());
             if (epic != null) {
                 epic.getIdsSubtask().remove(Integer.valueOf(id));
-                updateEpicDurationAndTime(epic);
+                updateDurationAndTime(epic);
                 updateStatusEpic(epic.getId());
             }
             historyManager.remove(id);
         }
-    }
-
-    private void updateEpicDurationAndTime(Epic epic) {
-        List<Subtask> subtasks = getAllSubtasksByEpicId(epic.getId());
-        epic.updateDurationAndTime(subtasks);
     }
 
     @Override
@@ -339,5 +335,41 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    public void updateDurationAndTime(Epic epic) {
+        List<Subtask> subtasks = getAllSubtasksByEpicId(epic.getId());
+
+        if (subtasks.isEmpty()) {
+            epic.setDuration(Duration.ZERO);
+            epic.setStartTime(null);
+            epic.setEndTime(null);
+        } else {
+            LocalDateTime start = subtasks.stream()
+                    .map(Subtask::getStartTime)
+                    .filter(Objects::nonNull)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime end = subtasks.stream()
+                    .map(subtask -> {
+                        if (subtask.getStartTime() != null && subtask.getDuration() != null) {
+                            return subtask.getStartTime().plus(subtask.getDuration());
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            Duration totalDuration = subtasks.stream()
+                    .map(Subtask::getDuration)
+                    .filter(Objects::nonNull)
+                    .reduce(Duration.ZERO, Duration::plus);
+
+            epic.setStartTime(start);
+            epic.setEndTime(end);
+            epic.setDuration(totalDuration);
+        }
+    }
 }
+
 

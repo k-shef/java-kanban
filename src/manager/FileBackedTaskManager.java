@@ -153,11 +153,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
             // Обновление длительности и времени начала/окончания эпиков на основе подзадач
             for (Epic epic : taskManager.epicMap.values()) {
-                List<Subtask> subtasks = new ArrayList<>();
-                for (Integer subtaskId : epic.getIdsSubtask()) {
-                    subtasks.add(taskManager.subtaskMap.get(subtaskId));
-                }
-                epic.updateDurationAndTime(subtasks);
+                taskManager.updateDurationAndTime(epic);
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Произошла ошибка при загрузке данных.", e);
