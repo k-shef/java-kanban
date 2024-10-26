@@ -4,10 +4,16 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm");
+    Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     // Методы работы с model.Task
     ArrayList<Task> getAllTasks();
 
@@ -53,5 +59,7 @@ public interface TaskManager {
     void removeSubtaskById(int id);
 
     List<Task> getHistory();
+
+    TreeSet<Task> getPrioritizedTasks();
 
 }
