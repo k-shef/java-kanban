@@ -1,4 +1,5 @@
 package http.handlers;
+
 import com.sun.net.httpserver.HttpExchange;
 import manager.TaskManager;
 import manager.NotFoundException;
@@ -33,19 +34,19 @@ public class SubtaskHandler extends BaseHttpHandler {
                 break;
             case POST_BY_ID:
                 try {
-                    taskManager.updateSubtask(newSubTask);
+                    taskManager.updateSubtask(newSubtask);
                     sendSuccess(exchange, "Задача с id =" + id + " обновлена");
                 } catch (TimeOverlapException timeOverlapException) {
                     sendHasInteractions(exchange);
                 } catch (NotFoundException notFoundException) {
-                    sendNotFound(exchange, "Задачи с id =" + newSubTask.getId() + " нет");
+                    sendNotFound(exchange, "Задачи с id =" + newSubtask.getId() + " нет");
                 } catch (Exception exception) {
                     internalServerError(exchange, exception.getMessage());
                 }
                 break;
             case POST:
                 try {
-                    taskManager.createSubtask(newSubTask);
+                    taskManager.createSubtask(newSubtask);
                     sendSuccess(exchange, "Задача успешно добавлена");
                 } catch (TimeOverlapException timeOverlapException) {
                     sendHasInteractions(exchange);

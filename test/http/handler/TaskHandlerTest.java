@@ -1,8 +1,10 @@
 package http.handler;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import http.HttpTaskServerTest;
+import manager.TimeOverlapException;
 import model.StatusTask;
 import model.Task;
 import org.junit.jupiter.api.Test;
@@ -21,41 +23,57 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TaskHandlerTest extends HttpTaskServerTest {
     @Test
     public void getTaskTest() throws InterruptedException, IOException {
+
         Task task1 = new Task("Test1", "Test1", StatusTask.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 0, 0));
-        //task1.setId(1);
         Task task2 = new Task("Test2", "Test2", StatusTask.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0));
-        //task2.setId(2);
 
         String taskJson1 = gson.toJson(task1);
         String taskJson2 = gson.toJson(task2);
 
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
-        HttpRequest request = HttpRequest.newBuilder().uri(url)
-                .POST(HttpRequest.BodyPublishers.ofString(taskJson1)).build();
-        client.send(request, HttpResponse.BodyHandlers.ofString());
+        URI baseUrl = URI.create("http://localhost:8089/tasks");
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(baseUrl)
+                .POST(HttpRequest.BodyPublishers.ofString(taskJson1))
+                .build();
+        HttpResponse<String> createResponse1 = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(201, createResponse1.statusCode(), "Неверный код ответа при создании первой задачи");
         task1.setId(1);
-        request = HttpRequest.newBuilder().uri(url)
-                .POST(HttpRequest.BodyPublishers.ofString(taskJson2)).build();
-        client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        request = HttpRequest.newBuilder()
+                .uri(baseUrl)
+                .POST(HttpRequest.BodyPublishers.ofString(taskJson2))
+                .build();
+        HttpResponse<String> createResponse2 = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(201, createResponse2.statusCode(), "Неверный код ответа при создании второй задачи");
         task2.setId(2);
 
-        request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/tasks/1")).GET().build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/1"))
+                .GET()
+                .build();
+        HttpResponse<String> getResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode(), "Код ответа не совпадает с ожидаемым");
+        assertEquals(200, getResponse.statusCode(), "Неверный код ответа при получении существующей задачи");
+        assertNotNull(getResponse.body(), "Тело ответа не должно быть пустым");
 
-        Task taskOfGet = gson.fromJson(response.body(), Task.class);
+        Task taskOfGet = gson.fromJson(getResponse.body(), Task.class);
+        assertNotNull(taskOfGet, "Задача не должна быть null после десериализации");
+        assertEquals(task1, taskOfGet, "Полученная задача не соответствует созданной");
+        assertNotEquals(task2, taskOfGet, "Получена неверная задача");
+        assertEquals(1, taskOfGet.getId(), "Неверный ID задачи");
 
-        assertEquals(taskOfGet, task1,
-                "Задача прошла конвертацию через Json не верно, или была получена не та задача");
-        assertNotEquals(taskOfGet, task2, "Была получена не та задача");
+        request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/3"))
+                .GET()
+                .build();
+        HttpResponse<String> notFoundResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/tasks/3")).GET().build();
-        response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(404, response.statusCode(), "Код ответа не совпадает с ожидаемым");
+        assertEquals(404, notFoundResponse.statusCode(), "Неверный код ответа для несуществующей задачи");
+        assertFalse(notFoundResponse.body().isEmpty(), "Тело ответа об ошибке не должно быть пустым");
     }
 
     @Test
@@ -69,7 +87,7 @@ public class TaskHandlerTest extends HttpTaskServerTest {
         String taskJson2 = gson.toJson(task2);
 
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8089/tasks");
         HttpRequest request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson1)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -98,7 +116,7 @@ public class TaskHandlerTest extends HttpTaskServerTest {
 
         // создаём HTTP-клиент и запрос
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8089/tasks");
         HttpRequest request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson)).build();
 
@@ -128,35 +146,41 @@ public class TaskHandlerTest extends HttpTaskServerTest {
     }
 
     @Test
-    public void updateTaskTest() throws IOException, InterruptedException {
+    public void updateTaskTest() throws IOException, InterruptedException, TimeOverlapException {
         Task task1 = new Task("Test1", "Test1", StatusTask.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 0, 0));
+
         Task task2 = new Task("Test2", "Test2", StatusTask.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 2, 0));
+
         Task task3 = new Task("Test addNewTask", "Test addNewTask description", StatusTask.NEW,
-                Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 0, 0));
+                Duration.ofMinutes(90), LocalDateTime.of(2024, 1, 1, 6, 0));
+        task3.setId(2);
 
         String taskJson1 = gson.toJson(task1);
         String taskJson2 = gson.toJson(task2);
         String taskJson3 = gson.toJson(task3);
 
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8089/tasks");
         HttpRequest request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson1)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
         task1.setId(1);
+
         request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson2)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
         task2.setId(2);
+
         request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson3)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
-        task3.setId(3);
+
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(201, response.statusCode(), "Код ответа не совпадает с ожидаемым");
+
 
         List<Task> tasksFromManager = taskManager.getAllTasks();
 
@@ -175,14 +199,14 @@ public class TaskHandlerTest extends HttpTaskServerTest {
         String taskJson2 = gson.toJson(task2);
 
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8089/tasks");
         HttpRequest request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson1)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
         request = HttpRequest.newBuilder().uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson2)).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
-        request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/tasks/1"))
+        request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8089/tasks/1"))
                 .DELETE().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 

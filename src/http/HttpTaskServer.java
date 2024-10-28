@@ -1,4 +1,5 @@
 package http;
+
 import com.sun.net.httpserver.HttpServer;
 
 import http.handlers.*;
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class HttpTaskServer {
-    private static final int PORT = 8080;
+    private static final int PORT = 8089;
     private final TaskManager taskManager;
     private HttpServer httpServer;
 
@@ -27,7 +28,7 @@ public class HttpTaskServer {
         httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
         httpServer.createContext("/tasks", new TaskHandler(taskManager));
         httpServer.createContext("/epics", new EpicHandler(taskManager));
-        httpServer.createContext("/subTasks", new SubtaskHandler(taskManager));
+        httpServer.createContext("/subtasks", new SubtaskHandler(taskManager));
         httpServer.createContext("/history", new HistoryHandler(taskManager));
         httpServer.createContext("/prioritized", new PrioritizedHandler(taskManager));
 

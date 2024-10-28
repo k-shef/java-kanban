@@ -57,9 +57,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int id) {
         Task task = taskMap.get(id);
-        if (task != null) {
-            historyManager.addToHistory(task);
+        if (task == null) {
+            throw new NotFoundException("Задачи с id=" + id + " нет");
         }
+        historyManager.addToHistory(task);
         return task;
     }
 
@@ -139,9 +140,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int id) {
         Epic epic = epicMap.get(id);
-        if (epic != null) {
-            historyManager.addToHistory(epic);
+        if (epic == null) {
+            throw new NotFoundException("Epic с id=" + id + " нет");
         }
+        historyManager.addToHistory(epic);
         return epic;
     }
 
@@ -274,9 +276,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtasksById(int subtaskId) {
         Subtask subtask = subtaskMap.get(subtaskId);
-        if (subtask != null) {
-            historyManager.addToHistory(subtask);
+        if (subtask == null) {
+            throw new NotFoundException("Подзадачи с id=" + subtaskId + " нет");
         }
+        historyManager.addToHistory(subtask);
         return subtask;
     }
 

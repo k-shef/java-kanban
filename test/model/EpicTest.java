@@ -25,7 +25,6 @@ class EpicTest {
 
     @BeforeEach
     public void setUp() {
-//        Managers managers = new Managers();
         taskManager = Managers.getDefault();
     }
 
