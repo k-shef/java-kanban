@@ -14,6 +14,7 @@ import java.util.TreeSet;
 public interface TaskManager {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm");
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
     // Методы работы с model.Task
     ArrayList<Task> getAllTasks();
 
