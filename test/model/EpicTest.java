@@ -38,12 +38,13 @@ class EpicTest {
 
     @Test
     public void testRemoveEpic() {
-        epic = new Epic("Починить авто", "Ремонт подвески машины", NEW);
+        Epic epic = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW);
         taskManager.createEpic(epic);
-        taskManager.removeEpicById(1);
-        Assertions.assertNull(taskManager.getEpicById(1));
-    }
+        taskManager.removeEpicById(epic.getId());
 
+        // Проверяем, что размер коллекции эпиков равен 0
+        Assertions.assertEquals(0, taskManager.getAllEpics().size(), "Эпик не был удален из хранилища");
+    }
 
     @Test
     public void testUpdateStatusEpic() throws TimeOverlapException {

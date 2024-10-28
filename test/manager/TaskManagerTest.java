@@ -48,7 +48,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     public void testRemoveTask() throws TimeOverlapException, IOException {
         taskManager.createTask(task);
         taskManager.removeTaskById(task.getId());
-        Assertions.assertNull(taskManager.getTaskById(task.getId()));
+        Assertions.assertEquals(0, taskManager.getAllTasks().size());
     }
 
     @Test
@@ -95,9 +95,8 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(subtask);
         taskManager.createSubtask(subtask2);
         taskManager.removeSubtaskById(subtask.getId());
-        List<Subtask> subtasks = taskManager.getAllSubtasksByEpicId(epic.getId());
-        assertEquals(1, subtasks.size());
-        Assertions.assertNull(taskManager.getSubtasksById(subtask.getId()));
+        Assertions.assertEquals(1, taskManager.getAllSubtasksByEpicId(epic.getId()).
+                size(), "Subtask не был удален из хранилища");
     }
 
     @Test
