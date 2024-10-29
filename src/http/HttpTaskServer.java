@@ -1,5 +1,6 @@
 package http;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 
 import http.handlers.*;
@@ -13,7 +14,6 @@ public class HttpTaskServer {
     private static final int PORT = 8089;
     private final TaskManager taskManager;
     private HttpServer httpServer;
-
 
     public HttpTaskServer(TaskManager taskManager) {
         this.taskManager = taskManager;

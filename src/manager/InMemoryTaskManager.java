@@ -338,7 +338,7 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    public void updateDurationAndTime(Epic epic) {
+    void updateDurationAndTime(Epic epic) {
         List<Subtask> subtasks = getAllSubtasksByEpicId(epic.getId());
 
         if (subtasks.isEmpty()) {

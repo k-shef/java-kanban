@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class BaseHttpHandler implements HttpHandler {
     protected final TaskManager taskManager;
     protected final Gson gson;
-    protected String method;
+
     protected int id;
     protected Task newTask;
     protected Epic newEpic;
@@ -40,7 +40,7 @@ public class BaseHttpHandler implements HttpHandler {
     }
 
     protected Endpoint getParameter(HttpExchange exchange) throws IOException {
-        method = exchange.getRequestMethod();
+        String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String[] stringId = path.split("/");
 

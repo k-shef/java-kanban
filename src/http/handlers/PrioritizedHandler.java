@@ -13,7 +13,7 @@ public class PrioritizedHandler extends BaseHttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
-        method = exchange.getRequestMethod();
+        String method = exchange.getRequestMethod();
 
         if ("GET".equals(method)) {
             try {
