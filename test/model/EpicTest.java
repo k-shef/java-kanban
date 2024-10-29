@@ -2,9 +2,13 @@ package model;
 
 import manager.Managers;
 import manager.TaskManager;
+import manager.TimeOverlapException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static model.StatusTask.IN_PROGRESS;
 import static model.StatusTask.NEW;
@@ -21,8 +25,7 @@ class EpicTest {
 
     @BeforeEach
     public void setUp() {
-        Managers managers = new Managers();
-        taskManager = managers.getDefault();
+        taskManager = Managers.getDefault();
     }
 
     @Test
@@ -35,18 +38,19 @@ class EpicTest {
 
     @Test
     public void testRemoveEpic() {
-        epic = new Epic("Починить авто", "Ремонт подвески машины", NEW);
+        Epic epic = new Epic("Починить авто", "Ремонт подвески машины", StatusTask.NEW);
         taskManager.createEpic(epic);
-        taskManager.removeEpicById(1);
-        Assertions.assertNull(taskManager.getEpicById(1));
+        taskManager.removeEpicById(epic.getId());
+
+        // Проверяем, что размер коллекции эпиков равен 0
+        Assertions.assertEquals(0, taskManager.getAllEpics().size(), "Эпик не был удален из хранилища");
     }
 
-
     @Test
-    public void testUpdateStatusEpic() {
+    public void testUpdateStatusEpic() throws TimeOverlapException {
         epic = new Epic("Починить авто", "Ремонт подвески машины", NEW);
         taskManager.createEpic(epic);
-        subtask = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", IN_PROGRESS, epic.getId());
+        Subtask subtask = new Subtask("Купить запчасти", "Выбрать и заказать запчасти", StatusTask.NEW, epic.getId(), Duration.ofHours(2), LocalDateTime.now().plusDays(4));
         taskManager.createSubtask(subtask);
         taskManager.updateStatusEpic(1);
         assertEquals(IN_PROGRESS, taskManager.getEpicById(1).getStatus());

@@ -2,8 +2,14 @@ package manager;
 
 
 public class Managers {
-    public TaskManager getDefault() {
-        TaskHistoryManager historyManager = new InMemoryTaskHistoryManager();
-        return new InMemoryTaskManager(historyManager);
+    private Managers() {
+    }
+
+    public static TaskManager getDefault() {
+        return new InMemoryTaskManager();
+    }
+
+    public static TaskHistoryManager getDefaultHistory() {
+        return new InMemoryTaskHistoryManager();
     }
 }
